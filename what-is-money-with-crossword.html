@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is Money? – Interactive Bitcoin Lesson</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px;color:#333;}
+.container{max-width:1020px;margin:0 auto;background:#fff;border-radius:20px;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+h1{text-align:center;color:#667eea;margin-bottom:10px;font-size:2.4em;}
+.subtitle{text-align:center;color:#666;margin-bottom:28px;font-size:1.05em;}
+.progress-bar{width:100%;height:28px;background:#e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:24px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;transition:width .5s;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9em;}
+.game-area{display:none;}
+.game-area.active{display:block;animation:fadeIn .4s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.intro-screen{text-align:center;padding:36px 16px;}
+.intro-screen h2{color:#667eea;margin-bottom:16px;font-size:1.9em;}
+.intro-screen p{font-size:1.15em;line-height:1.8;margin-bottom:24px;color:#555;}
+.btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:13px 36px;font-size:1.1em;border-radius:50px;cursor:pointer;transition:transform .2s,box-shadow .2s;font-weight:700;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(102,126,234,.4);}
+.btn:active{transform:translateY(0);}
+.btn-green{background:linear-gradient(135deg,#28a745,#20c997);}
+.btn-orange{background:linear-gradient(135deg,#fd7e14,#e83e8c);}
+.btn-gray{background:#6c757d;}
+.stage-title{font-size:1.7em;color:#667eea;margin-bottom:16px;text-align:center;}
+.stage-desc{font-size:1.05em;color:#666;margin-bottom:24px;text-align:center;line-height:1.6;}
+.trading-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:24px;}
+.item-card{background:#f8f9fa;border:3px solid #e0e0e0;border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:all .3s;}
+.item-card:hover{transform:scale(1.05);border-color:#667eea;}
+.item-card.selected{border-color:#667eea;background:#f0f4ff;box-shadow:0 4px 14px rgba(102,126,234,.3);}
+.item-icon{font-size:2.6em;margin-bottom:8px;}
+.item-name{font-weight:700;margin-bottom:4px;}
+.item-sub{color:#666;font-size:.88em;}
+.quiz-opts{display:grid;gap:12px;margin-bottom:24px;}
+.quiz-opt{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:18px;cursor:pointer;transition:all .3s;text-align:left;}
+.quiz-opt:hover{border-color:#667eea;background:#f0f4ff;}
+.quiz-opt.correct{border-color:#28a745;background:#d4edda;}
+.quiz-opt.incorrect{border-color:#dc3545;background:#f8d7da;}
+.feedback{background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:18px;margin-bottom:18px;display:none;}
+.feedback.show{display:block;animation:fadeIn .4s;}
+.feedback.success{background:#d4edda;border-color:#28a745;color:#155724;}
+.feedback.error{background:#f8d7da;border-color:#dc3545;color:#721c24;}
+.score-display{text-align:center;font-size:1.4em;color:#667eea;margin-bottom:18px;font-weight:700;}
+.comp-screen{text-align:center;padding:36px 16px;}
+.trophy{font-size:4.5em;margin-bottom:16px;}
+.chars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px;}
+.char-card{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .3s;}
+.char-card:hover{transform:scale(1.04);}
+.char-card.selected{border-color:#667eea;background:#f0f4ff;}
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;}
+.match-col{display:grid;gap:12px;}
+.match-item{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:14px;cursor:pointer;transition:all .3s;}
+.match-item:hover{border-color:#667eea;}
+.match-item.selected{border-color:#667eea;background:#f0f4ff;}
+.match-item.matched{border-color:#28a745;background:#d4edda;cursor:default;}
+
+/* ── CROSSWORD ── */
+.cw-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
+.cw-scroll{overflow-x:auto;max-width:100%;padding-bottom:4px;}
+.cw-grid{display:inline-grid;gap:2px;background:#444;border:3px solid #444;border-radius:4px;padding:2px;}
+.cw-cell{width:36px;height:36px;position:relative;}
+.cw-cell.blk{background:#1e1e1e;}
+.cw-cell.wht{background:#fff;}
+.cw-cell.wht.hi{background:#cce5ff;}
+.cw-cell.wht.ok{background:#b8f0cc !important;}
+.cw-cell.wht.err{background:#ffcccc !important;}
+.cw-cell.wht.rev{background:#fff9c4 !important;}
+.cw-num{position:absolute;top:1px;left:2px;font-size:8px;font-weight:700;color:#555;pointer-events:none;line-height:1;}
+.cw-inp{width:100%;height:100%;border:none;outline:none;background:transparent;text-align:center;font-size:1.05em;font-weight:700;text-transform:uppercase;color:#111;caret-color:transparent;cursor:pointer;padding:0;}
+.clues-wrap{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.clue-col h3{color:#667eea;margin-bottom:9px;font-size:.98em;border-bottom:2px solid #667eea;padding-bottom:5px;}
+.clue-row{display:flex;gap:7px;padding:5px 7px;border-radius:6px;cursor:pointer;transition:background .2s;font-size:.86em;line-height:1.4;margin-bottom:3px;}
+.clue-row:hover{background:#f0f4ff;}
+.clue-row.hi{background:#cce5ff;}
+.clue-row.done{color:#28a745;font-weight:700;}
+.clue-row.done .cn{color:#28a745;}
+.cn{font-weight:700;color:#667eea;min-width:20px;flex-shrink:0;}
+.cw-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.cw-msg{text-align:center;font-size:1.1em;font-weight:700;min-height:26px;}
+.cw-msg.good{color:#28a745;}
+.cw-msg.bad{color:#dc3545;}
+.cw-bar{background:#f0f4ff;border:2px solid #667eea;border-radius:10px;padding:10px 18px;text-align:center;font-size:.98em;color:#555;}
+.cw-bar strong{color:#667eea;font-size:1.25em;}
+
+@media(max-width:700px){
+  .match-wrap{grid-template-columns:1fr;}
+  h1{font-size:1.9em;}
+  .container{padding:14px;}
+  .cw-cell{width:27px;height:27px;}
+  .cw-inp{font-size:.82em;}
+  .cw-num{font-size:6.5px;}
+  .clues-wrap{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>💰 What is Money?</h1>
+  <p class="subtitle">Mi Primer Bitcoin · Chapter 2 — Interactive Lesson &amp; Crossword Test</p>
+  <div class="progress-bar"><div class="progress-fill" id="pBar">0%</div></div>
+  <div class="score-display" id="scoreLbl">Score: 0 / 0</div>
+
+  <!-- INTRO -->
+  <div class="game-area active" id="stage0">
+    <div class="intro-screen">
+      <h2>🎯 Welcome, Bitcoin Learner!</h2>
+      <p>Money is something we use every day — but what <em>really</em> is it?</p>
+      <ul style="text-align:left;max-width:580px;margin:8px auto 22px;font-size:1.1em;line-height:2.3;">
+        <li>📜 The history of barter &amp; its problems</li>
+        <li>✨ Properties that make good money</li>
+        <li>🔄 Evolution from shells → gold → paper → digital</li>
+        <li>₿ Why Bitcoin is the next step in money</li>
+        <li>🧩 A crossword to test everything you learned!</li>
+      </ul>
+      <button class="btn" onclick="go(1)">Start Learning! →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 1: BARTER -->
+  <div class="game-area" id="stage1">
+    <h2 class="stage-title">Stage 1: Life Before Money 🔄</h2>
+    <p class="stage-desc">You're a farmer with <strong>🌾 wheat</strong>. You need <strong>🐟 fish</strong>. Who do you try to trade with?</p>
+    <div class="feedback" id="fb1"></div>
+    <div class="trading-grid" id="barterGrid">
+      <div class="item-card" onclick="pickB(this,'shoes')"><div class="item-icon">👟</div><div class="item-name">Shoes</div><div class="item-sub">Shoemaker has these</div></div>
+      <div class="item-card" onclick="pickB(this,'fish')"><div class="item-icon">🐟</div><div class="item-name">Fish</div><div class="item-sub">Fisherman has these</div></div>
+      <div class="item-card" onclick="pickB(this,'pottery')"><div class="item-icon">🏺</div><div class="item-name">Pottery</div><div class="item-sub">Potter has these</div></div>
+      <div class="item-card" onclick="pickB(this,'cloth')"><div class="item-icon">🧵</div><div class="item-name">Cloth</div><div class="item-sub">Weaver has these</div></div>
+    </div>
+    <div style="text-align:center;"><button class="btn" onclick="checkB()">Try This Trade!</button></div>
+  </div>
+
+  <!-- STAGE 2: BARTER PROBLEMS -->
+  <div class="game-area" id="stage2">
+    <h2 class="stage-title">Stage 2: Problems with Barter 🤔</h2>
+    <p class="stage-desc">Click <strong>all three</strong> real problems that make barter difficult:</p>
+    <div class="quiz-opts" id="bpOpts">
+      <div class="quiz-opt" onclick="pickBP(this,true)"><strong>Double Coincidence of Wants</strong><p>You must find someone who has what you want AND wants what you have — simultaneously.</p></div>
+      <div class="quiz-opt" onclick="pickBP(this,true)"><strong>Divisibility Problem</strong><p>How do you split a live cow in half to pay for a loaf of bread?</p></div>
+      <div class="quiz-opt" onclick="pickBP(this,true)"><strong>Storage &amp; Preservation</strong><p>Food rots. Animals need feeding. You can't easily save value for the future.</p></div>
+      <div class="quiz-opt" onclick="pickBP(this,false)"><strong>It's Too Easy</strong><p>Barter makes every transaction simple and convenient for everyone.</p></div>
+    </div>
+    <div class="feedback" id="fb2"></div>
+    <div style="text-align:center;"><button class="btn" onclick="go(3)">Continue →</button></div>
+  </div>
+
+  <!-- STAGE 3: CHARACTERISTICS -->
+  <div class="game-area" id="stage3">
+    <h2 class="stage-title">Stage 3: What Makes Good Money? 💎</h2>
+    <p class="stage-desc">Select <strong>all 6</strong> properties that good money must have:</p>
+    <div class="chars-grid">
+      <div class="char-card" onclick="togChar(this,'durable',true)"><div style="font-size:1.9em;margin-bottom:7px;">⚙️</div><strong>Durable</strong><p style="font-size:.88em;margin-top:4px;">Lasts a long time without decay</p></div>
+      <div class="char-card" onclick="togChar(this,'portable',true)"><div style="font-size:1.9em;margin-bottom:7px;">🎒</div><strong>Portable</strong><p style="font-size:.88em;margin-top:4px;">Easy to carry around</p></div>
+      <div class="char-card" onclick="togChar(this,'divisible',true)"><div style="font-size:1.9em;margin-bottom:7px;">✂️</div><strong>Divisible</strong><p style="font-size:.88em;margin-top:4px;">Can be split into smaller units</p></div>
+      <div class="char-card" onclick="togChar(this,'fungible',true)"><div style="font-size:1.9em;margin-bottom:7px;">🔄</div><strong>Fungible</strong><p style="font-size:.88em;margin-top:4px;">Every unit is identical</p></div>
+      <div class="char-card" onclick="togChar(this,'scarce',true)"><div style="font-size:1.9em;margin-bottom:7px;">💎</div><strong>Scarce</strong><p style="font-size:.88em;margin-top:4px;">Limited supply</p></div>
+      <div class="char-card" onclick="togChar(this,'recognizable',true)"><div style="font-size:1.9em;margin-bottom:7px;">✅</div><strong>Recognizable</strong><p style="font-size:.88em;margin-top:4px;">Easy to verify as genuine</p></div>
+      <div class="char-card" onclick="togChar(this,'heavy',false)"><div style="font-size:1.9em;margin-bottom:7px;">🪨</div><strong>Heavy</strong><p style="font-size:.88em;margin-top:4px;">Very difficult to move</p></div>
+      <div class="char-card" onclick="togChar(this,'perishable',false)"><div style="font-size:1.9em;margin-bottom:7px;">🥬</div><strong>Perishable</strong><p style="font-size:.88em;margin-top:4px;">Decays or rots quickly</p></div>
+    </div>
+    <div class="feedback" id="fb3"></div>
+    <div style="text-align:center;"><button class="btn" onclick="checkChars()">Check My Answers</button></div>
+  </div>
+
+  <!-- STAGE 4: MATCHING -->
+  <div class="game-area" id="stage4">
+    <h2 class="stage-title">Stage 4: The Evolution of Money 📈</h2>
+    <p class="stage-desc">Match each type of money to its biggest limitation:</p>
+    <div class="match-wrap">
+      <div class="match-col">
+        <h3 style="text-align:center;margin-bottom:10px;">💱 Type of Money</h3>
+        <div class="match-item" onclick="pickM(this,'shells')" data-id="shells"><strong>🐚 Shells &amp; Beads</strong><p>Early commodity money</p></div>
+        <div class="match-item" onclick="pickM(this,'gold')" data-id="gold"><strong>🥇 Gold &amp; Silver</strong><p>Precious metal coins</p></div>
+        <div class="match-item" onclick="pickM(this,'paper')" data-id="paper"><strong>💵 Paper Money</strong><p>Government-issued notes</p></div>
+        <div class="match-item" onclick="pickM(this,'digital')" data-id="digital"><strong>💳 Digital Fiat</strong><p>Electronic bank money</p></div>
+      </div>
+      <div class="match-col">
+        <h3 style="text-align:center;margin-bottom:10px;">⚠️ Main Limitation</h3>
+        <div class="match-item" onclick="pickM(this,'ns')" data-id="ns" data-ans="shells"><strong>Not Truly Scarce</strong><p>More could always be found on beaches</p></div>
+        <div class="match-item" onclick="pickM(this,'heavy')" data-id="heavy" data-ans="gold"><strong>Heavy &amp; Hard to Transport</strong><p>Difficult for large transactions</p></div>
+        <div class="match-item" onclick="pickM(this,'print')" data-id="print" data-ans="paper"><strong>Unlimited Printing</strong><p>Governments can create more at will</p></div>
+        <div class="match-item" onclick="pickM(this,'central')" data-id="central" data-ans="digital"><strong>Centrally Controlled</strong><p>Banks and governments control access</p></div>
+      </div>
+    </div>
+    <div class="feedback" id="fb4"></div>
+    <div style="text-align:center;">
+      <p style="margin-bottom:10px;color:#666;">Matches: <span id="mCount">0</span> / 4</p>
+      <button class="btn" id="s4btn" style="display:none;" onclick="go(5)">Continue to Quiz →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 5: QUIZ -->
+  <div class="game-area" id="stage5">
+    <h2 class="stage-title">Stage 5: Quick Understanding Check 🎓</h2>
+    <p class="stage-desc">Answer both questions correctly to unlock the crossword!</p>
+    <div class="quiz-opts">
+      <div style="margin-bottom:10px;"><strong style="font-size:1.1em;">Q1 — What is the main purpose of money?</strong></div>
+      <div class="quiz-opt" onclick="pickQ(this,1,false)">To give governments power over citizens</div>
+      <div class="quiz-opt" onclick="pickQ(this,1,true)">To make trade easier and store value across time</div>
+      <div class="quiz-opt" onclick="pickQ(this,1,false)">To create jobs in the banking sector</div>
+    </div>
+    <div class="quiz-opts" style="margin-top:20px;">
+      <div style="margin-bottom:10px;"><strong style="font-size:1.1em;">Q2 — Why is Bitcoin considered "sound money"?</strong></div>
+      <div class="quiz-opt" onclick="pickQ(this,2,false)">Because it makes a sound when you send it</div>
+      <div class="quiz-opt" onclick="pickQ(this,2,true)">Its supply is capped at 21 million — making it scarce and inflation-resistant</div>
+      <div class="quiz-opt" onclick="pickQ(this,2,false)">Because every government in the world accepts it</div>
+    </div>
+    <div class="feedback" id="fb5"></div>
+    <div style="text-align:center;margin-top:22px;">
+      <button class="btn" id="s5btn" style="display:none;" onclick="go(6)">🧩 Take the Crossword Challenge!</button>
+    </div>
+  </div>
+
+  <!-- STAGE 6: CROSSWORD -->
+  <div class="game-area" id="stage6">
+    <h2 class="stage-title">🧩 Stage 6: Crossword Challenge</h2>
+    <p class="stage-desc">Test everything you've learned! Click a clue or a cell and type your answer.<br><small>Use <kbd>Tab</kbd> to jump words · Arrow keys to navigate · <kbd>Backspace</kbd> to delete</small></p>
+    <div class="cw-wrap">
+      <div class="cw-scroll"><div class="cw-grid" id="cwGrid"></div></div>
+      <div class="cw-btns">
+        <button class="btn btn-green" onclick="cwCheck()">✅ Check Answers</button>
+        <button class="btn btn-orange" onclick="cwReveal()">💡 Reveal All</button>
+        <button class="btn btn-gray" onclick="cwClear()">🔄 Clear Grid</button>
+      </div>
+      <div class="cw-bar" id="cwBar" style="display:none;"></div>
+      <div class="cw-msg" id="cwMsg"></div>
+      <div class="clues-wrap" id="cwClues"></div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn" id="cwBtn" style="display:none;" onclick="go(7)">🏆 See Final Results →</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="game-area" id="stage7">
+    <div class="comp-screen">
+      <div class="trophy">🏆</div>
+      <h2 style="color:#667eea;margin-bottom:14px;">Lesson Complete!</h2>
+      <p style="font-size:1.2em;margin-bottom:18px;">You've finished <em>Chapter 2 — What is Money?</em></p>
+      <div id="finalScore" style="font-size:1.7em;color:#667eea;font-weight:700;margin-bottom:24px;"></div>
+      <div style="background:#f8f9fa;padding:26px;border-radius:14px;margin-bottom:26px;text-align:left;">
+        <h3 style="color:#667eea;margin-bottom:11px;">🔑 Key Takeaways</h3>
+        <ul style="font-size:1em;line-height:2.2;color:#555;">
+          <li>💱 <strong>Barter</strong> fails due to double coincidence of wants, indivisibility &amp; storage problems</li>
+          <li>✨ <strong>Good money</strong>: durable, portable, divisible, fungible, scarce, recognizable</li>
+          <li>📜 Money evolved: <strong>Shells → Gold → Paper → Digital fiat → Bitcoin</strong></li>
+          <li>₿ <strong>Bitcoin</strong> is digital (portable) + fixed 21M supply (scarce) + decentralised</li>
+          <li>🔐 Unlike fiat, Bitcoin <strong>cannot be inflated</strong> by any government or bank</li>
+        </ul>
+      </div>
+      <button class="btn" onclick="restartAll()">↩ Start Over</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+let curStage=0, score=0, ttl=0;
+let bPick=null, chars={}, mState={sel:null,ok:0}, qA={1:false,2:false};
+
+function go(n){
+  document.querySelectorAll('.game-area').forEach(a=>a.classList.remove('active'));
+  document.getElementById('stage'+n).classList.add('active');
+  curStage=n;
+  const pct=Math.round(n/7*100);
+  document.getElementById('pBar').style.width=pct+'%';
+  document.getElementById('pBar').textContent=pct+'%';
+  if(n===6) cwInit();
+  if(n===7){
+    const p=ttl?Math.round(score/ttl*100):0;
+    const m=p>=80?'🥇':p>=60?'🥈':'🥉';
+    document.getElementById('finalScore').innerHTML=m+' '+score+' / '+ttl+' ('+p+'%)';
+  }
+}
+function upd(){document.getElementById('scoreLbl').textContent='Score: '+score+' / '+ttl;}
+
+/* ── Stage 1 ── */
+function pickB(el,v){
+  document.querySelectorAll('#barterGrid .item-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); bPick=v;
+}
+function checkB(){
+  const fb=document.getElementById('fb1');
+  if(!bPick){fb.className='feedback show error';fb.textContent='Please select someone to trade with first!';return;}
+  ttl++;
+  if(bPick==='fish'){
+    score++;
+    fb.className='feedback show success';
+    fb.innerHTML='<strong>Good thinking!</strong> But wait — what if the fisherman doesn\'t want wheat? What if he wants shoes? This is the <em>double coincidence of wants</em> problem — the core reason money was invented!';
+  } else {
+    fb.className='feedback show error';
+    fb.innerHTML='<strong>That won\'t work directly.</strong> You want fish, not '+bPick+'. In barter you\'d need to find a chain of trades first — exhausting! This is exactly why money was invented as a universal medium of exchange.';
+  }
+  upd();
+  setTimeout(()=>{const b=document.createElement('button');b.className='btn';b.style.marginTop='12px';b.textContent='Continue →';b.onclick=()=>go(2);fb.appendChild(b);},1800);
+}
+
+/* ── Stage 2 ── */
+let bpCount=0;
+function pickBP(el,correct){
+  if(el.classList.contains('correct')||el.classList.contains('incorrect'))return;
+  ttl++;
+  if(correct){score++;el.classList.add('correct');bpCount++;}
+  else el.classList.add('incorrect');
+  upd();
+  if(bpCount===3){
+    const fb=document.getElementById('fb2');
+    fb.className='feedback show success';
+    fb.innerHTML='<strong>Excellent!</strong> All three barter problems found. Money was invented to solve each one!';
+  }
+}
+
+/* ── Stage 3 ── */
+function togChar(el,id,good){
+  if(el.classList.contains('selected')){el.classList.remove('selected');delete chars[id];}
+  else{el.classList.add('selected');chars[id]=good;}
+}
+function checkChars(){
+  const fb=document.getElementById('fb3');
+  const c=Object.values(chars).filter(v=>v).length,w=Object.values(chars).filter(v=>!v).length;
+  ttl++;
+  if(c===6&&w===0){
+    score++;
+    fb.className='feedback show success';
+    fb.innerHTML='<strong>Perfect!</strong> All 6: Durable, Portable, Divisible, Fungible, Scarce, Recognizable. These are the properties Bitcoin was designed to maximise!<br><br><button class="btn" onclick="go(4)">Continue →</button>';
+  } else if(c>=4&&w===0){
+    score+=.5;
+    fb.className='feedback show';
+    fb.innerHTML='<strong>Nearly there!</strong> '+c+'/6 correct. Full list: Durable, Portable, Divisible, Fungible, Scarce, Recognizable.<br><br><button class="btn" onclick="go(4)">Continue →</button>';
+  } else {
+    fb.className='feedback show error';
+    fb.innerHTML='<strong>Not quite.</strong> Good money needs: Durable, Portable, Divisible, Fungible, Scarce, Recognizable. Avoid Heavy or Perishable!<br><br><button class="btn" onclick="go(4)">Continue Anyway →</button>';
+  }
+  upd();
+}
+
+/* ── Stage 4 ── */
+function pickM(el,id){
+  if(el.classList.contains('matched'))return;
+  if(!mState.sel){
+    document.querySelectorAll('.match-item.selected').forEach(i=>i.classList.remove('selected'));
+    el.classList.add('selected'); mState.sel={el,id};
+  } else {
+    const f=mState.sel; el.classList.add('selected');
+    const ans=el.dataset.ans||f.el.dataset.ans;
+    const usr=el.dataset.ans?f.id:id;
+    if(ans===usr){
+      ttl++;score++;upd();
+      setTimeout(()=>{
+        f.el.classList.add('matched');el.classList.add('matched');
+        f.el.classList.remove('selected');el.classList.remove('selected');
+        mState.ok++;
+        document.getElementById('mCount').textContent=mState.ok;
+        if(mState.ok===4){
+          const fb=document.getElementById('fb4');fb.className='feedback show success';
+          fb.innerHTML='<strong>All matched!</strong> Bitcoin solves every limitation: digital (portable), 21M cap (scarce), peer-to-peer (decentralised).';
+          document.getElementById('s4btn').style.display='inline-block';
+        }
+      },400);
+    } else {
+      setTimeout(()=>{f.el.classList.remove('selected');el.classList.remove('selected');},900);
+    }
+    mState.sel=null;
+  }
+}
+
+/* ── Stage 5 ── */
+function pickQ(el,q,correct){
+  el.parentElement.querySelectorAll('.quiz-opt').forEach(s=>s.classList.remove('correct','incorrect'));
+  ttl++;
+  if(correct){score++;el.classList.add('correct');qA[q]=true;}
+  else el.classList.add('incorrect');
+  upd();
+  if(qA[1]&&qA[2]){
+    document.getElementById('s5btn').style.display='inline-block';
+    const fb=document.getElementById('fb5');fb.className='feedback show success';
+    fb.innerHTML='<strong>Outstanding!</strong> Solid understanding of money and Bitcoin. Now tackle the crossword! 🧩';
+  }
+}
+
+/* ══════════════════════════════
+   CROSSWORD
+   13×13 grid — all intersections
+   verified conflict-free.
+   
+   Layout (verified):
+    Row 0:  SCARCE    A cols 0-5    shares S(0,0) with SCARCITY↓
+    Row 1:  FIAT      A cols 1-4
+    Row 2:  FUNGIBLE  A cols 1-8
+    Row 3:  MONEY     A cols 1-5
+    Row 4:  COIN      A cols 0-3    shares C(4,0) with SCARCITY↓
+    Row 5:  INFLATION A cols 0-8    shares I(5,0) with SCARCITY↓
+    Row 6:  TRADE     A cols 0-4    shares T(6,0) with SCARCITY↓
+    Row 8:  BARTER    A cols 6-11   shares A(8,7) with PORTABLE↓
+    Row 9:  GOLD      A cols 8-11
+    Row 11: VALUE     A cols 8-12
+    Row 12: BITCOIN   A cols 4-10   shares O(12,10) with ...
+    Col 0:  SCARCITY  D rows 0-7    
+    Col 3:  DURABLE   D rows 6-12   shares D(6,3) with TRADE↓ col3
+    Col 7:  PORTABLE  D rows 4-11   shares O(5,7) with INFLATION→
+    Col 12: DIVISIBLE D rows 0-8    shares last E with BARTER end
+══════════════════════════════ */
+const CW=[
+  {w:'SCARCE',   r:0, c:0, d:'A',n:1,  clue:'Limited in supply — a key property of sound money'},
+  {w:'FIAT',     r:1, c:1, d:'A',n:3,  clue:'Money declared legal tender by a government decree'},
+  {w:'FUNGIBLE', r:2, c:1, d:'A',n:4,  clue:'Every unit is interchangeable with any other unit'},
+  {w:'MONEY',    r:3, c:1, d:'A',n:6,  clue:'Medium of exchange used to buy goods and services'},
+  {w:'COIN',     r:4, c:0, d:'A',n:7,  clue:'Metal disc historically used as currency'},
+  {w:'INFLATION',r:5, c:0, d:'A',n:8,  clue:'Rise in prices caused by too much money in circulation'},
+  {w:'TRADE',    r:6, c:0, d:'A',n:9,  clue:'Exchange of goods, services, or value between people'},
+  {w:'BARTER',   r:8, c:6, d:'A',n:11, clue:'Exchanging goods directly without using any money'},
+  {w:'GOLD',     r:9, c:8, d:'A',n:12, clue:'Precious yellow metal used as money for centuries'},
+  {w:'VALUE',    r:11,c:8, d:'A',n:13, clue:'What money represents and stores over time'},
+  {w:'BITCOIN',  r:12,c:4, d:'A',n:14, clue:'Decentralised digital money with a fixed 21 million supply'},
+  {w:'SCARCITY', r:0, c:0, d:'D',n:1,  clue:'Limited availability that gives something monetary worth'},
+  {w:'DIVISIBLE',r:0, c:12,d:'D',n:2,  clue:'Can be split into smaller units (like satoshis)'},
+  {w:'PORTABLE', r:4, c:7, d:'D',n:5,  clue:'Easy to carry from one place to another'},
+  {w:'DURABLE',  r:6, c:3, d:'D',n:10, clue:'Resistant to decay — money must last over time'},
+];
+
+const NR=13, NC=13;
+let cwd=[], cwAct=null, cwDone=new Set(), _cwScored=false;
+
+function cwInit(){
+  cwd=[];
+  for(let r=0;r<NR;r++){cwd[r]=[];for(let c=0;c<NC;c++) cwd[r][c]={blk:true,ans:'',val:'',num:0,ws:[]};}
+  CW.forEach(w=>{
+    for(let i=0;i<w.w.length;i++){
+      const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+      cwd[r][c].blk=false; cwd[r][c].ans=w.w[i];
+      cwd[r][c].ws.push({n:w.n,d:w.d});
+      if(i===0) cwd[r][c].num=w.n;
+    }
+  });
+  cwRender(); cwMakeClues();
+}
+
+function cwRender(){
+  const g=document.getElementById('cwGrid');
+  g.innerHTML=''; g.style.gridTemplateColumns='repeat('+NC+',36px)';
+  for(let r=0;r<NR;r++) for(let c=0;c<NC;c++){
+    const cell=cwd[r][c];
+    const div=document.createElement('div');
+    div.className='cw-cell '+(cell.blk?'blk':'wht');
+    div.dataset.r=r; div.dataset.c=c;
+    if(!cell.blk){
+      if(cell.num){const s=document.createElement('span');s.className='cw-num';s.textContent=cell.num;div.appendChild(s);}
+      const inp=document.createElement('input');
+      inp.className='cw-inp'; inp.maxLength=1; inp.value=cell.val;
+      inp.dataset.r=r; inp.dataset.c=c;
+      inp.addEventListener('focus',()=>onFocus(r,c));
+      inp.addEventListener('click',()=>onClick(r,c));
+      inp.addEventListener('input',e=>onInput(e,r,c));
+      inp.addEventListener('keydown',e=>onKey(e,r,c));
+      div.appendChild(inp);
+    }
+    g.appendChild(div);
+  }
+}
+
+function cwMakeClues(){
+  const wrap=document.getElementById('cwClues');
+  const A=CW.filter(x=>x.d==='A').sort((a,b)=>a.n-b.n);
+  const D=CW.filter(x=>x.d==='D').sort((a,b)=>a.n-b.n);
+  wrap.innerHTML=`
+  <div class="clue-col">
+    <h3>➡️ Across</h3>
+    ${A.map(w=>`<div class="clue-row" id="cl-A-${w.n}" onclick="cwAct2(${w.n},'A')"><span class="cn">${w.n}.</span><span>${w.clue}</span></div>`).join('')}
+  </div>
+  <div class="clue-col">
+    <h3>⬇️ Down</h3>
+    ${D.map(w=>`<div class="clue-row" id="cl-D-${w.n}" onclick="cwAct2(${w.n},'D')"><span class="cn">${w.n}.</span><span>${w.clue}</span></div>`).join('')}
+  </div>`;
+}
+
+function cwAct2(n,d){
+  cwAct={n,d}; cwHL(); cwFocWord(n,d);
+  const el=document.getElementById('cl-'+d+'-'+n);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function cwFocWord(n,d){
+  const w=CW.find(x=>x.n===n&&x.d===d); if(!w) return;
+  for(let i=0;i<w.w.length;i++){
+    const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+    if(!cwd[r][c].val){focCell(r,c);return;}
+  }
+  focCell(w.r,w.c);
+}
+
+function onClick(r,c){
+  const cell=cwd[r][c]; if(!cell.ws.length) return;
+  if(cwAct){
+    const same=cell.ws.find(x=>x.n===cwAct.n&&x.d===cwAct.d);
+    if(same) return;
+    const other=cell.ws.find(x=>!(x.n===cwAct.n&&x.d===cwAct.d));
+    cwAct=other||cell.ws[0];
+  } else { cwAct=cell.ws[0]; }
+  cwHL(); updClueHL();
+}
+
+function onFocus(r,c){
+  const cell=cwd[r][c];
+  if(!cwAct){ if(cell.ws.length) cwAct=cell.ws[0]; }
+  else {
+    const in_w=cell.ws.some(x=>x.n===cwAct.n&&x.d===cwAct.d);
+    if(!in_w&&cell.ws.length) cwAct=cell.ws[0];
+  }
+  cwHL(); updClueHL();
+}
+
+function cwHL(){
+  document.querySelectorAll('.cw-cell.wht').forEach(d=>d.classList.remove('hi'));
+  document.querySelectorAll('.clue-row').forEach(c=>c.classList.remove('hi'));
+  if(!cwAct) return;
+  const w=CW.find(x=>x.n===cwAct.n&&x.d===cwAct.d); if(!w) return;
+  for(let i=0;i<w.w.length;i++){
+    const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+    const div=document.querySelector('.cw-cell[data-r="'+r+'"][data-c="'+c+'"]');
+    if(div) div.classList.add('hi');
+  }
+  const cl=document.getElementById('cl-'+w.d+'-'+w.n);
+  if(cl) cl.classList.add('hi');
+}
+
+function updClueHL(){
+  if(!cwAct) return;
+  const el=document.getElementById('cl-'+cwAct.d+'-'+cwAct.n);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function focCell(r,c){
+  const inp=document.querySelector('.cw-inp[data-r="'+r+'"][data-c="'+c+'"]');
+  if(inp) inp.focus();
+}
+
+function onInput(e,r,c){
+  const ch=e.target.value.replace(/[^a-zA-Z]/g,'').toUpperCase();
+  e.target.value=ch.slice(-1); cwd[r][c].val=e.target.value;
+  clrMark(r,c);
+  document.getElementById('cwMsg').textContent='';
+  if(e.target.value) cwAdv(r,c);
+}
+
+function onKey(e,r,c){
+  if(e.key==='Backspace'){
+    if(cwd[r][c].val){cwd[r][c].val='';e.target.value='';clrMark(r,c);}
+    else cwRet(r,c);
+    e.preventDefault();
+  } else if(e.key==='ArrowRight'){mvCell(r,c+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft') {mvCell(r,c-1);e.preventDefault();}
+    else if(e.key==='ArrowDown') {mvCell(r+1,c);e.preventDefault();}
+    else if(e.key==='ArrowUp')   {mvCell(r-1,c);e.preventDefault();}
+    else if(e.key==='Tab'){e.preventDefault();cwCycle(e.shiftKey);}
+}
+
+function cwAdv(r,c){
+  if(!cwAct) return;
+  const w=CW.find(x=>x.n===cwAct.n&&x.d===cwAct.d); if(!w) return;
+  const i=w.d==='A'?c-w.c:r-w.r;
+  if(i<w.w.length-1) focCell(w.d==='A'?r:r+1, w.d==='A'?c+1:c);
+}
+function cwRet(r,c){
+  if(!cwAct) return;
+  const w=CW.find(x=>x.n===cwAct.n&&x.d===cwAct.d); if(!w) return;
+  const i=w.d==='A'?c-w.c:r-w.r;
+  if(i>0) focCell(w.d==='A'?r:r-1, w.d==='A'?c-1:c);
+}
+function mvCell(r,c){
+  if(r<0||r>=NR||c<0||c>=NC||cwd[r][c].blk) return;
+  focCell(r,c);
+}
+function cwCycle(rev){
+  const L=CW.map(x=>({n:x.n,d:x.d}));
+  if(!cwAct){cwAct2(L[0].n,L[0].d);return;}
+  const i=L.findIndex(x=>x.n===cwAct.n&&x.d===cwAct.d);
+  const j=rev?(i-1+L.length)%L.length:(i+1)%L.length;
+  cwAct2(L[j].n,L[j].d);
+}
+function clrMark(r,c){
+  const d=document.querySelector('.cw-cell[data-r="'+r+'"][data-c="'+c+'"]');
+  if(d) d.classList.remove('ok','err','rev');
+}
+
+function cwCheck(){
+  let right=0,all=0; cwDone.clear();
+  CW.forEach(w=>{
+    let wOk=true;
+    for(let i=0;i<w.w.length;i++){
+      const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+      const cell=cwd[r][c];
+      const div=document.querySelector('.cw-cell[data-r="'+r+'"][data-c="'+c+'"]');
+      all++;
+      if(cell.val===w.w[i]){right++;if(div){div.classList.remove('err','rev');div.classList.add('ok');}}
+      else{wOk=false;if(div){div.classList.remove('ok','rev');div.classList.add('err');}}
+    }
+    if(wOk){
+      cwDone.add(w.n+'-'+w.d);
+      const cl=document.getElementById('cl-'+w.d+'-'+w.n);
+      if(cl) cl.classList.add('done');
+    }
+  });
+  const pct=Math.round(right/all*100);
+  const bar=document.getElementById('cwBar');
+  bar.style.display='block';
+  bar.innerHTML='Letters correct: <strong>'+right+' / '+all+' ('+pct+'%)</strong>';
+  const msg=document.getElementById('cwMsg');
+  if(right===all){
+    msg.className='cw-msg good';
+    msg.textContent='🎉 Incredible! Every single letter is correct!';
+    document.getElementById('cwBtn').style.display='inline-block';
+    if(!_cwScored){_cwScored=true;ttl++;score++;upd();}
+  } else if(pct>=70){
+    msg.className='cw-msg bad';
+    msg.textContent='So close! Fix the red cells. '+pct+'% correct.';
+    document.getElementById('cwBtn').style.display='inline-block';
+  } else {
+    msg.className='cw-msg bad';
+    msg.textContent=pct+'% correct — red cells need fixing. Keep going!';
+  }
+}
+
+function cwReveal(){
+  CW.forEach(w=>{
+    for(let i=0;i<w.w.length;i++){
+      const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+      cwd[r][c].val=w.w[i];
+      const inp=document.querySelector('.cw-inp[data-r="'+r+'"][data-c="'+c+'"]');
+      const div=document.querySelector('.cw-cell[data-r="'+r+'"][data-c="'+c+'"]');
+      if(inp) inp.value=w.w[i];
+      if(div){div.classList.remove('ok','err');div.classList.add('rev');}
+    }
+    const cl=document.getElementById('cl-'+w.d+'-'+w.n);
+    if(cl) cl.classList.add('done');
+  });
+  document.getElementById('cwMsg').className='cw-msg good';
+  document.getElementById('cwMsg').textContent='All answers revealed — study them and practice again!';
+  document.getElementById('cwBar').style.display='none';
+  document.getElementById('cwBtn').style.display='inline-block';
+}
+
+function cwClear(){
+  CW.forEach(w=>{
+    for(let i=0;i<w.w.length;i++){
+      const r=w.d==='A'?w.r:w.r+i, c=w.d==='A'?w.c+i:w.c;
+      cwd[r][c].val='';
+      const inp=document.querySelector('.cw-inp[data-r="'+r+'"][data-c="'+c+'"]');
+      const div=document.querySelector('.cw-cell[data-r="'+r+'"][data-c="'+c+'"]');
+      if(inp) inp.value='';
+      if(div) div.classList.remove('ok','err','rev');
+    }
+  });
+  document.querySelectorAll('.clue-row').forEach(c=>c.classList.remove('done'));
+  cwDone.clear(); _cwScored=false;
+  document.getElementById('cwMsg').textContent='';
+  document.getElementById('cwBar').style.display='none';
+}
+
+function restartAll(){
+  score=0;ttl=0;bPick=null;chars={};bpCount=0;
+  mState={sel:null,ok:0};qA={1:false,2:false};_cwScored=false;
+  document.querySelectorAll('.quiz-opt,.item-card,.char-card,.match-item').forEach(e=>e.classList.remove('selected','correct','incorrect','matched'));
+  document.querySelectorAll('.feedback').forEach(f=>{f.className='feedback';f.innerHTML='';});
+  ['s4btn','s5btn','cwBtn'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('mCount').textContent='0';
+  upd();
+  document.querySelectorAll('.game-area').forEach(a=>a.classList.remove('active'));
+  document.getElementById('stage0').classList.add('active');
+  document.getElementById('pBar').style.width='0%';
+  document.getElementById('pBar').textContent='0%';
+}
+upd();
+</script>
+</body>
+</html>
